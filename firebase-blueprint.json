@@ -1,0 +1,78 @@
+{
+  "entities": {
+    "Registration": {
+      "title": "Registration",
+      "description": "User registration for Midowga Dhalinyarada Calas",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the registrant"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address"
+        },
+        "homeAddress": {
+          "type": "string",
+          "description": "Home address"
+        },
+        "bloodType": {
+          "type": "string",
+          "enum": ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"],
+          "description": "Blood type"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number"
+        },
+        "gender": {
+          "type": "string",
+          "enum": ["Male", "Female", "Other"],
+          "description": "Gender"
+        },
+        "maritalStatus": {
+          "type": "string",
+          "enum": ["Single", "Married", "Divorced", "Widowed"],
+          "description": "Marital status"
+        },
+        "educationLevel": {
+          "type": "string",
+          "description": "Level of education"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL to the personal image"
+        },
+        "qaraan": {
+          "type": "number",
+          "description": "Number of times donated"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the registration was created"
+        }
+      },
+      "required": [
+        "fullName",
+        "email",
+        "homeAddress",
+        "bloodType",
+        "phone",
+        "gender",
+        "maritalStatus",
+        "educationLevel",
+        "qaraan",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/registrations/{registrationId}": {
+      "schema": "Registration",
+      "description": "List of all registered members and donors"
+    }
+  }
+}

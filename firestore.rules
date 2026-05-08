@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      // Bootstrapped admin email from runtime context
+      return isVerified() && request.auth.token.email == 'haaruunhassan4737@gmail.com';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Registrations ---
+    match /registrations/{registrationId} {
+      allow create: if isValidRegistration(incoming()) 
+                     && isValidId(registrationId);
+      
+      allow read, delete: if isAdmin();
+      
+      allow update: if isAdmin() && isValidRegistration(incoming());
+    }
+
+    function isValidRegistration(data) {
+      let requiredFields = [
+        'fullName', 'email', 'homeAddress', 'bloodType', 
+        'phone', 'gender', 'maritalStatus', 'educationLevel', 
+        'qaraan', 'createdAt'
+      ];
+      
+      return data.keys().hasAll(requiredFields)
+        && data.keys().size() >= 10 // Allowing for optional imageUrl
+        && data.keys().size() <= 11
+        && data.fullName is string && data.fullName.size() <= 100
+        && data.email is string && data.email.size() <= 100 && data.email.matches('^[^@]+@[^@]+\\.[^@]+$')
+        && data.homeAddress is string && data.homeAddress.size() <= 200
+        && data.bloodType in ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']
+        && data.phone is string && data.phone.size() <= 20
+        && data.gender in ['Male', 'Female', 'Other']
+        && data.maritalStatus in ['Single', 'Married', 'Divorced', 'Widowed']
+        && data.educationLevel is string && data.educationLevel.size() <= 100
+        && data.qaraan is number && data.qaraan >= 0
+        && data.createdAt == request.time
+        && (!data.keys().hasAny(['imageUrl']) || (data.imageUrl is string && data.imageUrl.size() <= 500));
+    }
+  }
+}
